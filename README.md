@@ -51,3 +51,40 @@ amount
 icon
 
 
+BUDGET
+Represents a planned amount for a specific period and category.
+Attributes:
+id – primary key
+amount – budgeted amount for that period
+total_expense – calculated total spent in that budget
+category – category this budget applies to
+start_date
+end_date
+
+
+ GOAL
+Represents a financial target (save X amount by some date).
+Attributes:
+id – primary key
+name – e.g., “New Laptop”
+target_amount
+start_date
+end_date
+status – e.g., IN_PROGRESS, COMPLETED, FAILED
+
+
+
+REPORT
+Represents a generated summary of finances for a time range.
+Attributes:
+id – primary key
+name – e.g., “Monthly Report – Nov 2025”
+start_date
+end_date
+total_income
+total_expense
+balance – usually total_income - total_expense
+status – e.g., GENERATED, VIEWED, etc.
+
+
+
