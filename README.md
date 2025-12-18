@@ -4,14 +4,14 @@
 <img width="1016" height="626" alt="final_fintrack" src="https://github.com/user-attachments/assets/bfd03215-9364-4342-86de-df744e61cae9" />
 
 
-Big picture
+Big picture<br>
 Central entity: PROFILE (this is the user of the system).
 Every other entity (CATEGORY, EXPENSE, INCOME, BUDGET, GOAL, REPORT) is connected to a profile – so nothing exists on its own.
 
 The flow is basically:
 Profile → defines Categories → adds Incomes & Expenses in those Categories → sets Budgets & Goals → generates Reports
 
-PROFILE
+PROFILE<br>
 Represents a user account.
 Attributes:
 id – primary key (unique id for each user)
@@ -23,7 +23,7 @@ is_active – to enable/disable accounts
 activation_token – for account verification/reset
 
 
-CATEGORY
+CATEGORY<br>
 Used to group incomes and expenses (e.g., Food, Rent, Salary, etc.).
 Attributes:
 id – primary key
@@ -31,7 +31,7 @@ name – category name
 type – usually something like INCOME / EXPENSE
 
 
-EXPENSE
+EXPENSE<br>
 Represents a single spending transaction.
 Attributes:
 id – primary key
@@ -41,7 +41,7 @@ amount
 icon – for display
 
 
-INCOME
+INCOME<br>
 Represents a money-in transaction (salary, bonus, rent received, etc.).
 Attributes:
 id – primary key
@@ -51,7 +51,7 @@ amount
 icon
 
 
-BUDGET
+BUDGET<br>
 Represents a planned amount for a specific period and category.
 Attributes:
 id – primary key
@@ -62,7 +62,7 @@ start_date
 end_date
 
 
- GOAL
+ GOAL<br>
 Represents a financial target (save X amount by some date).
 Attributes:
 id – primary key
@@ -74,7 +74,7 @@ status – e.g., IN_PROGRESS, COMPLETED, FAILED
 
 
 
-REPORT
+REPORT<br>
 Represents a generated summary of finances for a time range.
 Attributes:
 id – primary key
