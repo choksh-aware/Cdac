@@ -1,0 +1,182 @@
+package com.fintrack.moneymanager.service;
+
+import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
+
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import com.fintrack.moneymanager.dto.IncomeDTO;
+import com.fintrack.moneymanager.entity.CategoryEntity;
+import com.fintrack.moneymanager.entity.IncomeEntity;
+import com.fintrack.moneymanager.entity.ProfileEntity;
+import com.fintrack.moneymanager.repository.CategoryRepository;
+import com.fintrack.moneymanager.repository.IncomeRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class IncomeService {
+
+    private final CategoryRepository categoryRepository;
+    private final IncomeRepository incomeRepository;
+    private final ProfileService profileService;
+
+    // ---------------- ADD INCOME ----------------
+    public IncomeDTO addIncome(IncomeDTO dto) {
+        ProfileEntity profile = profileService.getCurrentProfile();
+
+        CategoryEntity category = categoryRepository.findById(dto.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        IncomeEntity income = toEntity(dto, profile, category);
+        income = incomeRepository.save(income);
+
+        return toDTO(income);
+    }
+
+    // ---------------- DELETE INCOME ----------------
+    public void deleteIncome(Long incomeId) {
+        ProfileEntity profile = profileService.getCurrentProfile();
+
+        IncomeEntity entity = incomeRepository.findById(incomeId)
+                .orElseThrow(() -> new RuntimeException("Income not found"));
+
+        if (!Objects.equals(entity.getProfile().getId(), profile.getId())) {
+            throw new RuntimeException("Unauthorized access to delete income");
+        }
+
+        incomeRepository.delete(entity);
+    }
+
+    // ---------------- CURRENT MONTH INCOMES ----------------
+    public List<IncomeDTO> getCurrentMonthIncomeForCurrentUser() {
+        ProfileEntity profile = profileService.getCurrentProfile();
+
+        LocalDate now = LocalDate.now();
+        LocalDate startDate = now.withDayOfMonth(1);
+        LocalDate endDate = now.withDayOfMonth(now.lengthOfMonth());
+
+        List<IncomeEntity> list =
+                incomeRepository.findByProfile_IdAndDateBetween(
+                        profile.getId(),
+                        startDate,
+                        endDate
+                );
+
+        return list.stream().map(this::toDTO).toList();
+    }
+
+    // ---------------- LATEST 5 INCOMES ----------------
+    public List<IncomeDTO> getLatest5IncomesForCurrentUser() {
+        ProfileEntity profile = profileService.getCurrentProfile();
+
+        List<IncomeEntity> list =
+                incomeRepository.findTop5ByProfile_IdOrderByDateDesc(profile.getId());
+
+        return list.stream().map(this::toDTO).toList();
+    }
+
+    // ---------------- TOTAL INCOME ----------------
+    public BigDecimal getTotalIncomesForCurrentUser() {
+        ProfileEntity profile = profileService.getCurrentProfile();
+
+        BigDecimal total = incomeRepository.findTotalIncomeByProfileId(profile.getId());
+        return total != null ? total : BigDecimal.ZERO;
+    }
+
+    // ---------------- FILTER INCOMES ----------------
+    public List<IncomeDTO> filterIncomes(
+            LocalDate startDate,
+            LocalDate endDate,
+            String keyword,
+            Sort sort) {
+
+        ProfileEntity profile = profileService.getCurrentProfile();
+
+        List<IncomeEntity> list =
+                incomeRepository.findByProfile_IdAndDateBetweenAndNameContainingIgnoreCase(
+                        profile.getId(),
+                        startDate,
+                        endDate,
+                        keyword,
+                        sort
+                );
+
+        return list.stream().map(this::toDTO).toList();
+    }
+
+    // ---------------- ENTITY → DTO ----------------
+    private IncomeDTO toDTO(IncomeEntity entity) {
+        return IncomeDTO.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .icon(entity.getIcon())
+                .categoryId(entity.getCategory() != null ? entity.getCategory().getId() : null)
+                .categoryName(entity.getCategory() != null ? entity.getCategory().getName() : "NA")
+                .amount(entity.getAmount())
+                .date(entity.getDate())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .build();
+    }
+
+    // ---------------- DTO → ENTITY ----------------
+    private IncomeEntity toEntity(
+            IncomeDTO dto,
+            ProfileEntity profile,
+            CategoryEntity category) {
+
+        return IncomeEntity.builder()
+                .name(dto.getName())
+                .icon(dto.getIcon())
+                .amount(dto.getAmount())
+                .date(dto.getDate())
+                .profile(profile)
+                .category(category)
+                .build();
+    }
+
+    // ---------------- EXPORT TO EXCEL ----------------
+    public byte[] exportIncomesToExcel() {
+
+        List<IncomeDTO> incomes = getCurrentMonthIncomeForCurrentUser();
+
+        try (Workbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            Sheet sheet = workbook.createSheet("Incomes");
+
+            Row header = sheet.createRow(0);
+            header.createCell(0).setCellValue("Date");
+            header.createCell(1).setCellValue("Source");
+            header.createCell(2).setCellValue("Category");
+            header.createCell(3).setCellValue("Amount");
+
+            int rowIdx = 1;
+            for (IncomeDTO income : incomes) {
+                Row row = sheet.createRow(rowIdx++);
+                row.createCell(0).setCellValue(
+                        income.getDate() != null ? income.getDate().toString() : ""
+                );
+                row.createCell(1).setCellValue(income.getName());
+                row.createCell(2).setCellValue(income.getCategoryName());
+                row.createCell(3).setCellValue(income.getAmount().doubleValue());
+            }
+
+            workbook.write(out);
+            return out.toByteArray();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to export incomes to Excel", e);
+        }
+    }
+}
