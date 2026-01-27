@@ -18,7 +18,7 @@ import com.fintrack.moneymanager.dto.ProfileDTO;
 import com.fintrack.moneymanager.entity.ProfileEntity;
 import com.fintrack.moneymanager.repository.ProfileRepository;
 import com.fintrack.moneymanager.util.JwtUtil;
-
+ 
 import lombok.RequiredArgsConstructor;
 
 @Service
