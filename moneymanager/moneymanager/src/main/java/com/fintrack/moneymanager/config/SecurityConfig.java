@@ -1,6 +1,6 @@
 package com.fintrack.moneymanager.config;
 
-import java.util.Arrays;
+import java.util.Arrays; 
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
