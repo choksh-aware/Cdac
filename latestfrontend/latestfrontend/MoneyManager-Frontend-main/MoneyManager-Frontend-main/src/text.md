@@ -1,0 +1,3 @@
+Using cloudnary for storing the images. we are not storing the the images in database because it is a very big process which includes the conversion of images to byte stream.
+we can use AWS , Cloudnary...
+I'm using cloudnary because it is a small scale project
