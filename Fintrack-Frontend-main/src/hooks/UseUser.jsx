@@ -41,6 +41,3 @@ const UseUser = () => {
 }
 
 export default UseUser;
-
-
-
