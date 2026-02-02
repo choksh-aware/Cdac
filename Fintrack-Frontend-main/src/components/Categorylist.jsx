@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 
 const Categorylist = ({categories = [], onEditCategory, onDeleteCategory, onAddCategory}) => {
   const [hoveredCategory, setHoveredCategory] = useState(null)
-
+ 
   const getTypeIcon = (type) => {
     return type === 'income' ? <TrendingUp size={16} /> : <TrendingDown size={16} />
   }

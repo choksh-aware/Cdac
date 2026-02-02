@@ -3,7 +3,7 @@ import React from 'react'
 import { useState } from 'react';
 import TransactionInfoCard from './TransactionInfoCard';
 import moment from 'moment';
-
+ 
 const ExpenseList = ({transactions, onDelete, onDownload, onEmail}) => {
 
     const[loading, setLoading] = useState(false);

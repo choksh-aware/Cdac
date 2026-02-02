@@ -3,7 +3,7 @@ import React from 'react'
 import { useState } from 'react';
 import TransactionInfoCard from './TransactionInfoCard';
 import momemnt from 'moment';
-
+ 
 
 const IncomeList = ({transactions, onDelete, onDownload, onEmail}) => {
 
