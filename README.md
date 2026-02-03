@@ -1,12 +1,13 @@
 # Cdac
 
 
-<img width="1016" height="626" alt="final_fintrack" src="https://github.com/user-attachments/assets/bfd03215-9364-4342-86de-df744e61cae9" />
+<img width="1920" height="1080" alt="ER" src="https://github.com/user-attachments/assets/f20a56ed-b153-4a32-a684-d6d3b4658f92" />
+
 
 
 Big picture<br>
 Central entity: PROFILE (this is the user of the system).
-Every other entity (CATEGORY, EXPENSE, INCOME, BUDGET, GOAL, REPORT) is connected to a profile – so nothing exists on its own.
+Every other entity (CATEGORY, EXPENSE, INCOME, GOAL, REPORT) is connected to a profile – so nothing exists on its own.
 
 The flow is basically:
 Profile → defines Categories → adds Incomes & Expenses in those Categories → sets Budgets & Goals → generates Reports
@@ -51,17 +52,6 @@ amount
 icon
 
 
-BUDGET<br>
-Represents a planned amount for a specific period and category.
-Attributes:
-id – primary key
-amount – budgeted amount for that period
-total_expense – calculated total spent in that budget
-category – category this budget applies to
-start_date
-end_date
-
-
  GOAL<br>
 Represents a financial target (save X amount by some date).
 Attributes:
@@ -74,7 +64,7 @@ status – e.g., IN_PROGRESS, COMPLETED, FAILED
 
 
 
-REPORT<br>
+REPORT(excel sheet)<br>
 Represents a generated summary of finances for a time range.
 Attributes:
 id – primary key
