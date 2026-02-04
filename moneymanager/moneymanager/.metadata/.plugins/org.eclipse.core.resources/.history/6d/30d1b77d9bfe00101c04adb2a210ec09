@@ -1,0 +1,39 @@
+package com.fintrack.moneymanager.controller;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.fintrack.moneymanager.dto.GoalDTO;
+import com.fintrack.moneymanager.service.GoalService;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/goals")
+@RequiredArgsConstructor
+public class GoalController {
+
+    private final GoalService goalService;
+
+    @PostMapping
+    public ResponseEntity<GoalDTO> createGoal(@RequestBody GoalDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(goalService.createGoal(dto));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<GoalDTO>> getGoals() {
+        return ResponseEntity.ok(goalService.getGoalsForCurrentUser());
+    }
+
+    @PatchMapping("/{id}/add")
+    public ResponseEntity<GoalDTO> addAmount(
+            @PathVariable Long id,
+            @RequestParam BigDecimal amount) {
+        return ResponseEntity.ok(goalService.addAmount(id, amount));
+    }
+}

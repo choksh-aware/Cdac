@@ -1,0 +1,5 @@
+package com.fintrack.moneymanager.repository;
+
+public class GoalRepository {
+
+}

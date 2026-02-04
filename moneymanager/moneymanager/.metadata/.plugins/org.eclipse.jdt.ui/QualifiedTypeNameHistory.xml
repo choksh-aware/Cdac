@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+    <fullyQualifiedTypeName name="java.beans.Customizer"/>
+    <fullyQualifiedTypeName name="jakarta.persistence.Table"/>
+    <fullyQualifiedTypeName name="jakarta.persistence.Id"/>
+    <fullyQualifiedTypeName name="com.sun.tools.javac.util.List"/>
+    <fullyQualifiedTypeName name="java.util.Optional"/>
+    <fullyQualifiedTypeName name="org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Sort"/>
+    <fullyQualifiedTypeName name="org.springframework.http.HttpHeaders"/>
+    <fullyQualifiedTypeName name="org.springframework.security.core.userdetails.User"/>
+    <fullyQualifiedTypeName name="java.util.Collections"/>
+    <fullyQualifiedTypeName name="lombok.Value"/>
+    <fullyQualifiedTypeName name="java.util.stream.IntStream"/>
+    <fullyQualifiedTypeName name="java.io.ByteArrayOutputStream"/>
+    <fullyQualifiedTypeName name="java.util.Objects"/>
+    <fullyQualifiedTypeName name="org.springframework.data.domain.Sort"/>
+    <fullyQualifiedTypeName name="org.apache.poi.ss.usermodel.Row"/>
+    <fullyQualifiedTypeName name="org.apache.poi.ss.usermodel.Sheet"/>
+    <fullyQualifiedTypeName name="java.util.List"/>
+    <fullyQualifiedTypeName name="org.springframework.security.core.Authentication"/>
+    <fullyQualifiedTypeName name="org.springframework.beans.factory.annotation.Value"/>
+    <fullyQualifiedTypeName name="java.util.Map"/>
+    <fullyQualifiedTypeName name="org.springframework.web.cors.UrlBasedCorsConfigurationSource"/>
+    <fullyQualifiedTypeName name="org.springframework.security.config.Customizer"/>
+    <fullyQualifiedTypeName name="java.util.Arrays"/>
+    <fullyQualifiedTypeName name="org.springframework.web.cors.CorsConfigurationSource"/>
+    <fullyQualifiedTypeName name="java.io.IOException"/>
+    <fullyQualifiedTypeName name="org.springframework.transaction.annotation.Transactional"/>
+</qualifiedTypeNameHistroy>

@@ -1,5 +1,0 @@
-package com.fintrack.moneymanager.repository;
-
-public interface ProfileRepository {
-
-}

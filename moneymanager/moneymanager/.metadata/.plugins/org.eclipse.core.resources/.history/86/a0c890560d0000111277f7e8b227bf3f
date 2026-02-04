@@ -1,0 +1,193 @@
+package com.fintrack.moneymanager.service;
+
+import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
+
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.fintrack.moneymanager.dto.ExpenseDTO;
+import com.fintrack.moneymanager.entity.CategoryEntity;
+import com.fintrack.moneymanager.entity.ExpenseEntity;
+import com.fintrack.moneymanager.entity.ProfileEntity;
+import com.fintrack.moneymanager.repository.CategoryRepository;
+import com.fintrack.moneymanager.repository.ExpenseRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class ExpenseService {
+
+    private final CategoryRepository categoryRepository;
+    private final ExpenseRepository expenseRepository;
+    private final ProfileService profileService;
+
+    // ---------------- ADD EXPENSE ----------------
+    public ExpenseDTO addExpense(ExpenseDTO dto) {
+        ProfileEntity profile = profileService.getCurrentProfile();
+
+        CategoryEntity category = categoryRepository.findById(dto.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        ExpenseEntity expense = toEntity(dto, profile, category);
+        expense = expenseRepository.save(expense);
+
+        return toDTO(expense);
+    }
+
+    // ---------------- CURRENT MONTH EXPENSES ----------------
+    public List<ExpenseDTO> getCurrentMonthExpenseForCurrentUser() {
+        ProfileEntity profile = profileService.getCurrentProfile();
+
+        LocalDate now = LocalDate.now();
+        LocalDate startDate = now.withDayOfMonth(1);
+        LocalDate endDate = now.withDayOfMonth(now.lengthOfMonth());
+
+        List<ExpenseEntity> list =
+                expenseRepository.findByProfile_IdAndDateBetween(
+                        profile.getId(),
+                        startDate,
+                        endDate
+                );
+
+        return list.stream().map(this::toDTO).toList();
+    }
+
+    // ---------------- DELETE EXPENSE ----------------
+    public void deleteExpense(Long expenseId) {
+        ProfileEntity profile = profileService.getCurrentProfile();
+
+        ExpenseEntity entity = expenseRepository.findById(expenseId)
+                .orElseThrow(() -> new RuntimeException("Expense not found"));
+
+        if (!Objects.equals(entity.getProfile().getId(), profile.getId())) {
+            throw new RuntimeException("Unauthorized access to delete expense");
+        }
+
+        expenseRepository.delete(entity);
+    }
+
+    // ---------------- LATEST 5 EXPENSES ----------------
+    @Transactional(readOnly = true)
+    public List<ExpenseDTO> getLatest5ExpensesForCurrentUser() {
+        ProfileEntity profile = profileService.getCurrentProfile();
+
+        List<ExpenseEntity> list =
+                expenseRepository.findTop5ByProfile_IdOrderByDateDesc(profile.getId());
+
+        return list.stream().map(this::toDTO).toList();
+    }
+
+    // ---------------- TOTAL EXPENSE ----------------
+    @Transactional(readOnly = true)
+    public BigDecimal getTotalExpenseForCurrentUser() {
+        ProfileEntity profile = profileService.getCurrentProfile();
+
+        BigDecimal total = expenseRepository.findTotalExpenseByProfileId(profile.getId());
+        return total != null ? total : BigDecimal.ZERO;
+    }
+
+    // ---------------- FILTER EXPENSES ----------------
+    public List<ExpenseDTO> filterExpenses(
+            LocalDate startDate,
+            LocalDate endDate,
+            String keyword,
+            Sort sort) {
+
+        ProfileEntity profile = profileService.getCurrentProfile();
+
+        List<ExpenseEntity> list =
+                expenseRepository.findByProfile_IdAndDateBetweenAndNameContainingIgnoreCase(
+                        profile.getId(),
+                        startDate,
+                        endDate,
+                        keyword,
+                        sort
+                );
+
+        return list.stream().map(this::toDTO).toList();
+    }
+
+    // ---------------- NOTIFICATIONS ----------------
+    public List<ExpenseDTO> getNotificationsForUserOnDate(Long profileId, LocalDate date) {
+        List<ExpenseEntity> list =
+                expenseRepository.findByProfile_IdAndDate(profileId, date);
+
+        return list.stream().map(this::toDTO).toList();
+    }
+
+    // ---------------- DTO → ENTITY ----------------
+    private ExpenseEntity toEntity(
+            ExpenseDTO dto,
+            ProfileEntity profile,
+            CategoryEntity category) {
+
+        return ExpenseEntity.builder()
+                .name(dto.getName())
+                .icon(dto.getIcon())
+                .amount(dto.getAmount())
+                .date(dto.getDate())
+                .profile(profile)
+                .category(category)
+                .build();
+    }
+
+    // ---------------- ENTITY → DTO ----------------
+    private ExpenseDTO toDTO(ExpenseEntity entity) {
+        return ExpenseDTO.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .icon(entity.getIcon())
+                .categoryId(entity.getCategory() != null ? entity.getCategory().getId() : null)
+                .categoryName(entity.getCategory() != null ? entity.getCategory().getName() : "NA")
+                .amount(entity.getAmount())
+                .date(entity.getDate())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .build();
+    }
+
+    // ---------------- EXPORT TO EXCEL ----------------
+    public byte[] exportExpensesToExcel() {
+
+        List<ExpenseDTO> expenses = getCurrentMonthExpenseForCurrentUser();
+
+        try (Workbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            Sheet sheet = workbook.createSheet("Expenses");
+
+            Row header = sheet.createRow(0);
+            header.createCell(0).setCellValue("Date");
+            header.createCell(1).setCellValue("Expense Name");
+            header.createCell(2).setCellValue("Category");
+            header.createCell(3).setCellValue("Amount");
+
+            int rowIdx = 1;
+            for (ExpenseDTO expense : expenses) {
+                Row row = sheet.createRow(rowIdx++);
+                row.createCell(0).setCellValue(
+                        expense.getDate() != null ? expense.getDate().toString() : ""
+                );
+                row.createCell(1).setCellValue(expense.getName());
+                row.createCell(2).setCellValue(expense.getCategoryName());
+                row.createCell(3).setCellValue(expense.getAmount().doubleValue());
+            }
+
+            workbook.write(out);
+            return out.toByteArray();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to export expenses to Excel", e);
+        }
+    }
+}

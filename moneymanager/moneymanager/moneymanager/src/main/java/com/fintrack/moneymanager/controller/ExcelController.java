@@ -1,0 +1,40 @@
+package com.fintrack.moneymanager.controller;
+
+import java.io.IOException;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fintrack.moneymanager.service.ExcelService;
+import com.fintrack.moneymanager.service.ExpenseService;
+import com.fintrack.moneymanager.service.IncomeService;
+
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/excel")
+public class ExcelController {
+
+    private final ExcelService excelService;
+    private final IncomeService incomeService;
+    private  final ExpenseService expenseService;
+
+    @GetMapping("/download/income")
+    private void downloadIncomesExcel(HttpServletResponse response) throws IOException {
+        response.setHeader("Content-Disposition", "attachment; filename=incomes.xlsx");
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        excelService.writeIncomesToExcel(response.getOutputStream(), incomeService.getCurrentMonthIncomeForCurrentUser());
+        response.flushBuffer();
+    }
+
+    @GetMapping("/download/expense")
+    private void downloadExpensesExcel(HttpServletResponse response) throws IOException {
+        response.setHeader("Content-Disposition", "attachment; filename=expenses.xlsx");
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        excelService.writeExpensesToExcel(response.getOutputStream(), expenseService.getCurrentMonthExpenseForCurrentUser());
+        response.flushBuffer();
+    }
+}

@@ -1,0 +1,79 @@
+package com.fintrack.moneymanager.service;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.fintrack.moneymanager.dto.GoalDTO;
+import com.fintrack.moneymanager.entity.GoalEntity;
+import com.fintrack.moneymanager.entity.ProfileEntity;
+import com.fintrack.moneymanager.repository.GoalRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class GoalService {
+
+    private final GoalRepository goalRepository;
+    private final ProfileService profileService;
+
+    // CREATE GOAL
+    public GoalDTO createGoal(GoalDTO dto) {
+        ProfileEntity profile = profileService.getCurrentProfile();
+
+        GoalEntity goal = GoalEntity.builder()
+                .name(dto.getName())
+                .targetAmount(dto.getTargetAmount())
+                .currentAmount(BigDecimal.ZERO)
+                .startDate(dto.getStartDate())
+                .targetDate(dto.getTargetDate())
+                .status("IN_PROGRESS")
+                .profile(profile)
+                .build();
+
+        return toDTO(goalRepository.save(goal));
+    }
+
+    // GET ALL GOALS
+    @Transactional(readOnly = true)
+    public List<GoalDTO> getGoalsForCurrentUser() {
+        ProfileEntity profile = profileService.getCurrentProfile();
+
+        return goalRepository.findByProfile_IdOrderByCreatedAtDesc(profile.getId())
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+    // ADD AMOUNT TO GOAL
+    public GoalDTO addAmount(Long goalId, BigDecimal amount) {
+        GoalEntity goal = goalRepository.findById(goalId)
+                .orElseThrow(() -> new RuntimeException("Goal not found"));
+
+        BigDecimal updated = goal.getCurrentAmount().add(amount);
+        goal.setCurrentAmount(updated);
+
+        if (updated.compareTo(goal.getTargetAmount()) >= 0) {
+            goal.setStatus("COMPLETED");
+        }
+
+        return toDTO(goalRepository.save(goal));
+    }
+
+    private GoalDTO toDTO(GoalEntity entity) {
+        return GoalDTO.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .targetAmount(entity.getTargetAmount())
+                .currentAmount(entity.getCurrentAmount())
+                .startDate(entity.getStartDate())
+                .targetDate(entity.getTargetDate())
+                .status(entity.getStatus())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .build();
+    }
+}
